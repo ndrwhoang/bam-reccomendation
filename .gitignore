@@ -1,0 +1,8 @@
+*.ipynb
+.vscode
+__pycache__
+glove.6B
+dataset/processed/all
+dataset/misc
+dataset/raw_inter
+dataset/raw

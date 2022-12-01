@@ -25,14 +25,14 @@ class BaseDataset(Dataset):
 
         data = self._read_data()
         self.queries, self.candidates = self._convert_to_samples(data)
-        self.n_samples = len(self.mentions)
+        self.n_samples = len(self.queries)
 
     def _read_data(self):
         # Read in dataset and mapping for hard candidates
-        dataset_path = os.path.normpath(self.config["paths"]["dataset"])
+        dataset_path = os.path.normpath(self.config["path"]["dataset"])
         if self.mode == "train":
-            indices_path = self.config["paths"]["train_indices"]
-            hard_mapping_path = self.config["paths"]["train_hard_indices"]
+            indices_path = self.config["path"]["train_indices"]
+            hard_mapping_path = self.config["path"]["train_hard_indices"]
         elif self.mode == "train_subset":
             indices_path = self.config["path"]["train_subset_indices"]
             hard_mapping_path = self.config["path"]["train_subset_hard_indices"]
@@ -47,7 +47,7 @@ class BaseDataset(Dataset):
         with open(dataset_path, "r", encoding="utf-8") as f:
             dataset = json.load(f)
 
-        with open(indices_path, "r", encoding="tuf-8") as f:
+        with open(indices_path, "r", encoding="utf-8") as f:
             sample_ids = json.load(f)
 
         with open(hard_mapping_path, "r", encoding="utf-8") as f:
@@ -69,13 +69,13 @@ class BaseDataset(Dataset):
             text = sample["synopsis"]
             hard_candidate_ids = mapping[sample_id]
             random.shuffle(hard_candidate_ids)
-            hard_candidates = hard_candidates[
+            hard_candidate_ids = hard_candidate_ids[
                 : int(self.config["dataset"]["n_hard_candidates"])
             ]
             hard_candidates = [
                 dataset[cand_id]["synopsis"] for cand_id in hard_candidate_ids
             ]
-            hard_candidates.insert(text, 0)
+            hard_candidates.insert(0, text)
 
             queries.append(text)
             candidates.append(hard_candidates)
@@ -110,8 +110,8 @@ class BaseDataset(Dataset):
             max_length=1024,
         )
 
-        query_bs = query_encoding.size(0)
-        candidate_bs = candidate_encoding.size(0)
+        query_bs = query_encoding["input_ids"].size(0)
+        candidate_bs = candidate_encoding["input_ids"].size(0)
         n_groups = int(candidate_bs / query_bs)
         labels = torch.arange(0, candidate_bs, n_groups)
 

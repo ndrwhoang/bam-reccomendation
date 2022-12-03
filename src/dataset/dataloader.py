@@ -95,19 +95,19 @@ class BaseDataset(Dataset):
         query_encoding = self.tokenizer(
             list(queries),
             truncation=True,
-            padding=True,
+            padding='max_length',
             return_attention_mask=True,
             return_tensors="pt",
-            max_length=1024,
+            max_length=self.config['dataset'].getint('seq_len'),
         )
 
         candidate_encoding = self.tokenizer(
             candidates,
             truncation=True,
-            padding=True,
+            padding='max_length',
             return_attention_mask=True,
             return_tensors="pt",
-            max_length=1024,
+            max_length=self.config['dataset'].getint('seq_len'),
         )
 
         query_bs = query_encoding["input_ids"].size(0)

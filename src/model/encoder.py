@@ -15,27 +15,6 @@ class Reranker(PreTrainedModel):
         self.config = config
         self.pretrained_encoder = AutoModel.from_pretrained(self.config.pretrained_name)
 
-    def _init_weights(self, module):
-        # Code from hf itself so this plays nice with the ecosystem/trainer
-        """Initialize the weights"""
-        if isinstance(module, nn.Linear):
-            # Slightly different from the TF version which uses truncated_normal for initialization
-            # cf https://github.com/pytorch/pytorch/pull/5617
-            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
-            if module.bias is not None:
-                module.bias.data.zero_()
-        elif isinstance(module, nn.Embedding):
-            module.weight.data.normal_(mean=0.0, std=self.config.initializer_range)
-            if module.padding_idx is not None:
-                module.weight.data[module.padding_idx].zero_()
-        elif isinstance(module, nn.LayerNorm):
-            module.bias.data.zero_()
-            module.weight.data.fill_(1.0)
-
-    # def _set_gradient_checkpointing(self, module, value=False):
-    #     if isinstance(module, AutoModel):
-    #         module.gradient_checkpointing = value
-
     def loss_fn(self, scores, labels):
         return F.cross_entropy(scores, labels)
 

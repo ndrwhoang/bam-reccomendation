@@ -18,7 +18,7 @@ def load_model(config):
     pretrained_name = config['model']['pretrained_name']
     pretrained_config = PretrainedConfig.from_pretrained(pretrained_name)
     pretrained_config = update_pretrained_config(pretrained_config, config['model'])
-    model = Reranker.from_pretrained(pretrained_name, config=pretrained_config)
+    model = Reranker(pretrained_config)
     model = freeze_model(model, [0,1,2,3,4])
 
     return model

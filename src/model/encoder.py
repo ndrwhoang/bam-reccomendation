@@ -6,7 +6,7 @@ from transformers import AutoModel, PreTrainedModel
 from transformers.modeling_outputs import SequenceClassifierOutput
 from transformers import logging as t_logging
 
-t_logging.set_verbosity_error()
+# t_logging.set_verbosity_error()
 
 
 class Reranker(PreTrainedModel):

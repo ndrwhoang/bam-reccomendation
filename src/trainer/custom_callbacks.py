@@ -30,9 +30,9 @@ from transformers import (
 def freeze_model(model, freeze_layers):
     # Need to change the
     for layer in freeze_layers:
-        for param in model.encoder.base_model.layer[layer].parameters():
+        for param in model.pretrained_encoder.encoder.layer[layer].parameters():
             param.require_grad = False
-    for param in model.encoder.embeddings.parameters():
+    for param in model.pretrained_encoder.embeddings.parameters():
         param.requires_grad = False
 
     return model
@@ -72,7 +72,7 @@ class UnfreezingCallback(TrainerCallback):
             for name, param in self.trainer.model.named_parameters():
                 param.requires_grad = True
             for g in self.trainer.optimizer.param_groups:
-                g["lr"] = self.unzfreeze_lr
+                g["lr"] = self.unfreeze_lr
 
     def on_save(
         self,
@@ -87,4 +87,5 @@ class UnfreezingCallback(TrainerCallback):
 
 
 class InferenceEvaluationCallback(TrainerCallback):
-    raise NotImplementedError
+    def __init__(self):
+        raise NotImplementedError

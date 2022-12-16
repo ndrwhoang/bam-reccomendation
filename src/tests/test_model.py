@@ -18,7 +18,7 @@ def load_model(config):
     pretrained_name = config["model"]["pretrained_name"]
     pretrained_config = PretrainedConfig.from_pretrained(pretrained_name)
     pretrained_config = update_pretrained_config(pretrained_config, config["model"])
-    model = Reranker.from_pretrained(pretrained_name, config=pretrained_config)
+    model = Reranker(pretrained_config)
 
     return model
 
@@ -48,6 +48,7 @@ def model_input_test(model):
         model_out = model(**batch)
 
         print(model_out.logits.size())
+        print(model_out.hidden_states.size())
         print(model_out.loss)
         model_out.loss.backward()
 
@@ -73,6 +74,7 @@ def model_sample_with_backprop_test(model, config):
 
     model.train()
     model.zero_grad(set_to_none=True)
+    
     with torch.autograd.set_detect_anomaly(True):
         for i_batch, batch in enumerate(dataloader):
             # if i_batch == 3:
@@ -80,10 +82,6 @@ def model_sample_with_backprop_test(model, config):
 
             batch = {k: v.to(device) for k, v in batch.items()}
             model_out = model(**batch)
-
-            with open("test_input.json", "w") as f:
-                out = {k: v.detach().cpu().numpy().tolist() for k, v in batch.items()}
-                json.dump(out, f)
 
             # if torch.isfinite(model_out.loss):
             #     model_out.loss.backward()
@@ -95,6 +93,7 @@ def model_sample_with_backprop_test(model, config):
             model.zero_grad(set_to_none=True)
             print("-==---")
 
+    
     return
 
 
@@ -104,8 +103,8 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read(os.path.normpath("configs/base_config.ini"))
     model = load_model(config)
-    # model_input_test(model)
-    model_sample_with_backprop_test(model, config)
+    model_input_test(model)
+    # model_sample_with_backprop_test(model, config)
 
     # NativeLayerNormBackward0
     # AddmmBackward0

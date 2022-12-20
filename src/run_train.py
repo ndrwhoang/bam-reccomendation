@@ -37,7 +37,8 @@ def init_trainer(config):
     model = load_model(config)
     optimizer, lr_scheduler = get_adafactor_os(model)
     train_dataset, eval_dataset = load_dataset(config)
-
+    train_dataset.tokenizer.save_pretrained(os.path.normpath(f"./training_out/{config['run_name']}/tokenizer"))
+    
     trainer = Trainer(
         model=model,
         args=training_args,

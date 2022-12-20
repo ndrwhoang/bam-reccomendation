@@ -7,7 +7,7 @@ from transformers import TrainingArguments
 def get_training_args(config):
     training_args = TrainingArguments(
         run_name=config["run_name"],
-        output_dir=os.path.normpath("./training_out/"),
+        output_dir=os.path.normpath(f"./training_out/{config['run_name']}/"),
         evaluation_strategy="epoch",
         per_device_train_batch_size=config.getint("train_bs"),
         per_device_eval_batch_size=config.getint("eval_bs"),

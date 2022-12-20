@@ -10,20 +10,21 @@ from transformers import logging as t_logging
 
 
 class Reranker(PreTrainedModel):
-    def __init__(self, config):
+    def __init__(self, config, inference=False):
         super().__init__(config)
         self.config = config
-        self.pretrained_encoder = AutoModel.from_pretrained(self.config.pretrained_name)
+        
+        if not inference:
+            self.pretrained_encoder = AutoModel.from_pretrained(self.config.pretrained_name)
+        else:
+            self.pretrained_encoder = AutoModel.from_config(self.config)
 
     def loss_fn(self, scores, labels):
         return F.cross_entropy(scores, labels)
 
-    def score_candidates(self, query_embeddings, candidate_embeddings):
-        query_embeddings = F.normalize(query_embeddings, dim=1)
-        candidate_embeddings = F.normalize(candidate_embeddings, dim=1)
-
+    def score_candidates(self, query_embedding, candidate_embedding):
         return torch.matmul(
-            query_embeddings, torch.transpose(candidate_embeddings, 0, 1)
+            query_embedding, torch.transpose(candidate_embedding, 0, 1)
         )
 
     def forward(
@@ -44,9 +45,11 @@ class Reranker(PreTrainedModel):
 
         query_embedding = encoder_out.last_hidden_state[: query_ids.size(0), :, :]
         query_embedding = torch.mean(query_embedding, dim=1)
+        query_embedding = F.normalize(query_embedding, dim=1)
 
         candidate_embedding = encoder_out.last_hidden_state[query_ids.size(0) :, :, :]
         candidate_embedding = torch.mean(candidate_embedding, dim=1)
+        candidate_embedding = F.normalize(candidate_embedding, dim=1)
 
         scores = self.score_candidates(query_embedding, candidate_embedding)
         loss = self.loss_fn(scores, labels) if torch.is_tensor(labels) else None

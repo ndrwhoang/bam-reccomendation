@@ -3,7 +3,7 @@ import logging
 import configparser
 
 from torch.utils.data import DataLoader
-from transformers import Trainer, PretrainedConfig, AutoTokenizer, EarlyStoppingCallback
+from transformers import Trainer, AutoConfig, AutoTokenizer, EarlyStoppingCallback
 
 from src.dataset.dataloader import BaseDataset
 from src.model.encoder import Reranker
@@ -16,7 +16,7 @@ from src.trainer.custom_optimizers import get_adafactor_os
 
 def load_model(config):
     pretrained_name = config["model"]["pretrained_name"]
-    pretrained_config = PretrainedConfig.from_pretrained(pretrained_name)
+    pretrained_config = AutoConfig.from_pretrained(pretrained_name)
     pretrained_config = update_pretrained_config(pretrained_config, config["model"])
     model = Reranker(pretrained_config)
     model = freeze_model(model, [0, 1, 2, 3, 4])
